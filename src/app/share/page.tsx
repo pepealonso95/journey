@@ -1,14 +1,15 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { parseShareUrl } from "@/lib/share-url";
-import { GoogleBooksService } from "@/lib/google-books";
+import { getBookById } from "@/lib/google-books";
 import type { GoogleBook } from "@/lib/google-books";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Copy, Loader2, BookOpen, ChevronRight } from "lucide-react";
+import { Header } from "@/components/layout";
 
 // Utility function to clean HTML tags from descriptions
 function cleanDescription(description: string): string {
@@ -19,7 +20,7 @@ function cleanDescription(description: string): string {
     .trim();
 }
 
-export default function SharePage() {
+function SharePageContent() {
   const searchParams = useSearchParams();
   const [books, setBooks] = useState<GoogleBook[]>([]);
   const [listTitle, setListTitle] = useState<string | undefined>();
@@ -41,8 +42,7 @@ export default function SharePage() {
       setListTitle(title);
 
       try {
-        const googleBooksService = new GoogleBooksService();
-        const bookPromises = bookIds.map(id => googleBooksService.getBookById(id));
+        const bookPromises = bookIds.map(id => getBookById(id));
         const loadedBooks = await Promise.all(bookPromises);
         
         // Filter out any failed loads but maintain order
@@ -101,34 +101,12 @@ export default function SharePage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900">
-            <ChevronRight className="h-4 w-4 mr-1" />
-            Journey
-          </Link>
-          <div className="flex items-center gap-4 text-xs text-gray-500">
-            <Link 
-              href="https://x.com/pepealonsog" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-gray-900 underline transition-colors"
-            >
-              Built by @pepealonsog
-            </Link>
-            <span className="text-gray-300">•</span>
-            <Link 
-              href="https://github.com/pepealonso95/journey/tree/main" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-gray-900 underline transition-colors"
-            >
-              Open Source Repo
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Header>
+        <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900">
+          <ChevronRight className="h-4 w-4 mr-1" />
+          Journey
+        </Link>
+      </Header>
       <main className="max-w-6xl mx-auto px-4 py-4">
         {/* List Title */}
         {listTitle && (
@@ -329,5 +307,17 @@ export default function SharePage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function SharePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    }>
+      <SharePageContent />
+    </Suspense>
   );
 }

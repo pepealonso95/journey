@@ -31,90 +31,107 @@ export interface GoogleBooksResponse {
   totalItems: number;
 }
 
-export class GoogleBooksService {
-  private apiKey: string;
-  private baseUrl = 'https://www.googleapis.com/books/v1/volumes';
+const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 
-  constructor(apiKey?: string) {
-    this.apiKey = apiKey || process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY || process.env.GOOGLE_BOOKS_API_KEY || '';
-  }
+function getApiKey(): string {
+  return process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY || process.env.GOOGLE_BOOKS_API_KEY || '';
+}
 
-  async searchBooks(query: string, maxResults = 10): Promise<GoogleBook[]> {
-    const url = new URL(this.baseUrl);
-    url.searchParams.append('q', query);
-    url.searchParams.append('maxResults', maxResults.toString());
-    url.searchParams.append('key', this.apiKey);
+export async function searchBooks(query: string, maxResults = 10): Promise<GoogleBook[]> {
+  const url = new URL(BASE_URL);
+  url.searchParams.append('q', query);
+  url.searchParams.append('maxResults', maxResults.toString());
+  url.searchParams.append('key', getApiKey());
 
-    try {
-      const response = await fetch(url.toString());
-      if (!response.ok) {
-        throw new Error(`Google Books API error: ${response.status}`);
-      }
-
-      const data: GoogleBooksResponse = await response.json();
-      return data.items || [];
-    } catch (error) {
-      console.error('Google Books API error:', error);
-      throw new Error('Failed to search books');
+  try {
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      throw new Error(`Google Books API error: ${response.status}`);
     }
-  }
 
-  async getBookById(id: string): Promise<GoogleBook | null> {
-    const url = `${this.baseUrl}/${id}?key=${this.apiKey}`;
-
-    try {
-      const response = await fetch(url.toString());
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
-        throw new Error(`Google Books API error: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Google Books API error:', error);
-      throw new Error('Failed to get book details');
-    }
-  }
-
-  /**
-   * Transform Google Books data to our database format
-   */
-  static transformToDbFormat(googleBook: GoogleBook) {
-    const { id, volumeInfo } = googleBook;
-    const imageLinks = volumeInfo.imageLinks || {};
-    
-    // Extract ISBN identifiers
-    const isbn10 = volumeInfo.industryIdentifiers?.find(
-      (id) => id.type === 'ISBN_10'
-    )?.identifier;
-    const isbn13 = volumeInfo.industryIdentifiers?.find(
-      (id) => id.type === 'ISBN_13'
-    )?.identifier;
-
-    return {
-      id,
-      title: volumeInfo.title,
-      authors: JSON.stringify(volumeInfo.authors || []),
-      description: volumeInfo.description,
-      publishedDate: volumeInfo.publishedDate,
-      thumbnail: imageLinks.thumbnail,
-      smallThumbnail: imageLinks.smallThumbnail,
-      medium: imageLinks.medium,
-      large: imageLinks.large,
-      extraLarge: imageLinks.extraLarge,
-      isbn10,
-      isbn13,
-      pageCount: volumeInfo.pageCount,
-      categories: JSON.stringify(volumeInfo.categories || []),
-      language: volumeInfo.language,
-      previewLink: volumeInfo.previewLink,
-      infoLink: volumeInfo.infoLink,
-      canonicalVolumeLink: volumeInfo.canonicalVolumeLink,
-    };
+    const data: GoogleBooksResponse = await response.json();
+    return data.items || [];
+  } catch (error) {
+    console.error('Google Books API error:', error);
+    throw new Error('Failed to search books');
   }
 }
 
-// Create singleton instance
+export async function getBookById(id: string): Promise<GoogleBook | null> {
+  const url = `${BASE_URL}/${id}?key=${getApiKey()}`;
+
+  try {
+    const response = await fetch(url.toString());
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new Error(`Google Books API error: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Google Books API error:', error);
+    throw new Error('Failed to get book details');
+  }
+}
+
+/**
+ * Transform Google Books data to our database format
+ */
+export function transformToDbFormat(googleBook: GoogleBook) {
+  const { id, volumeInfo } = googleBook;
+  const imageLinks = volumeInfo.imageLinks || {};
+  
+  // Extract ISBN identifiers
+  const isbn10 = volumeInfo.industryIdentifiers?.find(
+    (id) => id.type === 'ISBN_10'
+  )?.identifier;
+  const isbn13 = volumeInfo.industryIdentifiers?.find(
+    (id) => id.type === 'ISBN_13'
+  )?.identifier;
+
+  return {
+    id,
+    title: volumeInfo.title,
+    authors: JSON.stringify(volumeInfo.authors || []),
+    description: volumeInfo.description,
+    publishedDate: volumeInfo.publishedDate,
+    thumbnail: imageLinks.thumbnail,
+    smallThumbnail: imageLinks.smallThumbnail,
+    medium: imageLinks.medium,
+    large: imageLinks.large,
+    extraLarge: imageLinks.extraLarge,
+    isbn10,
+    isbn13,
+    pageCount: volumeInfo.pageCount,
+    categories: JSON.stringify(volumeInfo.categories || []),
+    language: volumeInfo.language,
+    previewLink: volumeInfo.previewLink,
+    infoLink: volumeInfo.infoLink,
+    canonicalVolumeLink: volumeInfo.canonicalVolumeLink,
+  };
+}
+
+// Legacy class wrapper for backward compatibility (can be removed after migration)
+export class GoogleBooksService {
+  constructor(_apiKey?: string) {
+    // apiKey parameter kept for backward compatibility but not used
+    // since helper functions use environment variables directly
+  }
+
+  async searchBooks(query: string, maxResults = 10): Promise<GoogleBook[]> {
+    return searchBooks(query, maxResults);
+  }
+
+  async getBookById(id: string): Promise<GoogleBook | null> {
+    return getBookById(id);
+  }
+
+  static transformToDbFormat(googleBook: GoogleBook) {
+    return transformToDbFormat(googleBook);
+  }
+}
+
+// Create singleton instance for backward compatibility
 export const googleBooksService = new GoogleBooksService();
