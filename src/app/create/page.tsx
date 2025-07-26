@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, Suspense } from "react";
 import { searchBooks, getBookById } from "@/lib/google-books";
 import type { GoogleBook } from "@/lib/google-books";
 import { generateShareUrl, parseShareUrl, ANONYMOUS_LIST_SIZE } from "@/lib/share-url";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { Search, Copy, ChevronLeft } from "lucide-react";
+import { Search, Copy, ChevronLeft, Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout";
 import { BookList, SearchResults, BookComparison } from "@/components/book";
@@ -18,7 +18,7 @@ interface ComparisonState {
   existingIndex: number;
 }
 
-export default function CreatePage() {
+function CreatePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [books, setBooks] = useState<GoogleBook[]>([]);
@@ -297,5 +297,17 @@ export default function CreatePage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function CreatePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
+      </div>
+    }>
+      <CreatePageContent />
+    </Suspense>
   );
 }

@@ -133,8 +133,8 @@ function SharePageContent() {
                       sizes="192px"
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full bg-muted rounded-lg">
-                      <span className="text-sm text-muted-foreground">No cover</span>
+                    <div className="flex items-center justify-center h-full bg-gray-200 rounded-lg">
+                      <span className="text-sm text-gray-500">No cover</span>
                     </div>
                   )}
                 </div>
@@ -145,12 +145,12 @@ function SharePageContent() {
 
               {/* Book Details */}
               <div className="text-left">
-                <h2 className="text-xl font-semibold text-foreground mb-3 leading-tight">
+                <h2 className="text-xl font-semibold text-gray-900 mb-3 leading-tight">
                   {book.volumeInfo.title}
                 </h2>
                 
                 {book.volumeInfo.authors && (
-                  <p className="text-lg text-muted-foreground mb-4">
+                  <p className="text-lg text-gray-600 mb-4">
                     {book.volumeInfo.authors.join(", ")}
                   </p>
                 )}
@@ -183,8 +183,8 @@ function SharePageContent() {
                       sizes="160px"
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full bg-muted rounded-lg">
-                      <span className="text-sm text-muted-foreground">No cover</span>
+                    <div className="flex items-center justify-center h-full bg-gray-200 rounded-lg">
+                      <span className="text-sm text-gray-500">No cover</span>
                     </div>
                   )}
                 </div>
@@ -195,18 +195,18 @@ function SharePageContent() {
 
               {/* Book Details */}
               <div className="text-left">
-                <h2 className="text-lg font-semibold text-foreground mb-3 leading-tight">
+                <h2 className="text-lg font-semibold text-gray-900 mb-3 leading-tight">
                   {book.volumeInfo.title}
                 </h2>
                 
                 {book.volumeInfo.authors && (
-                  <p className="text-base text-muted-foreground mb-3">
+                  <p className="text-base text-gray-600 mb-3">
                     {book.volumeInfo.authors.join(", ")}
                   </p>
                 )}
                 
                 {book.volumeInfo.description && (
-                  <p className="text-muted-foreground leading-relaxed text-sm line-clamp-4">
+                  <p className="text-gray-500 leading-relaxed text-sm line-clamp-4">
                     {cleanDescription(book.volumeInfo.description)}
                   </p>
                 )}
@@ -232,8 +232,8 @@ function SharePageContent() {
                       sizes="128px"
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full bg-muted rounded-lg">
-                      <span className="text-sm text-muted-foreground">No cover</span>
+                    <div className="flex items-center justify-center h-full bg-gray-200 rounded-lg">
+                      <span className="text-sm text-gray-500">No cover</span>
                     </div>
                   )}
                 </div>
@@ -244,18 +244,18 @@ function SharePageContent() {
 
               {/* Book Details */}
               <div className="text-left">
-                <h2 className="text-lg font-semibold text-foreground mb-3 leading-tight">
+                <h2 className="text-lg font-semibold text-gray-900 mb-3 leading-tight">
                   {book.volumeInfo.title}
                 </h2>
                 
                 {book.volumeInfo.authors && (
-                  <p className="text-base text-muted-foreground mb-3">
+                  <p className="text-base text-gray-600 mb-3">
                     {book.volumeInfo.authors.join(", ")}
                   </p>
                 )}
                 
                 {book.volumeInfo.description && (
-                  <p className="text-muted-foreground leading-relaxed text-sm line-clamp-4">
+                  <p className="text-gray-500 leading-relaxed text-sm line-clamp-4">
                     {cleanDescription(book.volumeInfo.description)}
                   </p>
                 )}
