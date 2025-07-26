@@ -15,14 +15,14 @@ interface BookComparisonProps {
 export function BookComparison({ comparison, onChoice }: BookComparisonProps) {
   return (
     <div className="max-w-4xl mx-auto">
-      <h2 className="text-xl font-semibold text-center mb-8">
+      <h2 className="text-xl font-semibold text-center mb-8 text-gray-900">
         Which should be read first?
       </h2>
 
       <div className="grid md:grid-cols-2 gap-6">
         <button
           onClick={() => onChoice(true)}
-          className="group bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors text-left"
+          className="group bg-white border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors text-left shadow-sm"
         >
           <div className="flex items-start gap-4">
             <div className="relative w-20 h-32 flex-shrink-0">
@@ -42,7 +42,7 @@ export function BookComparison({ comparison, onChoice }: BookComparisonProps) {
             </div>
             <div className="flex-1">
               <div className="text-xs text-gray-500 mb-1">New book</div>
-              <h3 className="font-medium mb-1 line-clamp-2">
+              <h3 className="font-medium mb-1 line-clamp-2 text-gray-900">
                 {comparison.newBook.volumeInfo.title}
               </h3>
               {comparison.newBook.volumeInfo.authors && (
@@ -56,7 +56,7 @@ export function BookComparison({ comparison, onChoice }: BookComparisonProps) {
 
         <button
           onClick={() => onChoice(false)}
-          className="group bg-gray-50 rounded-lg p-6 hover:bg-gray-100 transition-colors text-left"
+          className="group bg-white border border-gray-200 rounded-lg p-6 hover:bg-gray-50 transition-colors text-left shadow-sm"
         >
           <div className="flex items-start gap-4">
             <div className="relative w-20 h-32 flex-shrink-0">
@@ -76,7 +76,7 @@ export function BookComparison({ comparison, onChoice }: BookComparisonProps) {
             </div>
             <div className="flex-1">
               <div className="text-xs text-gray-500 mb-1">Position {comparison.existingIndex + 1}</div>
-              <h3 className="font-medium mb-1 line-clamp-2">
+              <h3 className="font-medium mb-1 line-clamp-2 text-gray-900">
                 {comparison.existingBook.volumeInfo.title}
               </h3>
               {comparison.existingBook.volumeInfo.authors && (

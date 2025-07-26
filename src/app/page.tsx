@@ -23,7 +23,7 @@ export default function Home() {
         <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
           <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <BookOpen className="h-8 w-8 text-black" />
+              <BookOpen className="h-8 w-8 text-gray-900" />
               <h1 className="text-2xl font-bold text-gray-900">Journey</h1>
             </div>
             <div className="flex items-center gap-4">
@@ -33,7 +33,7 @@ export default function Home() {
               <Button variant="ghost" onClick={() => signOut()}>
                 Sign Out
               </Button>
-              <div className="flex items-center gap-4 text-xs text-gray-500 ml-4">
+              <div className="flex items-center gap-4 text-xs text-gray-600 ml-4">
                 <Link 
                   href="https://x.com/pepealonsog" 
                   target="_blank"
@@ -42,7 +42,7 @@ export default function Home() {
                 >
                   Built by @pepealonsog
                 </Link>
-                <span className="text-gray-300">•</span>
+                <span className="text-gray-400">•</span>
                 <Link 
                   href="https://github.com/pepealonso95/journey/tree/main" 
                   target="_blank"
@@ -108,10 +108,10 @@ export default function Home() {
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
-            <BookOpen className="h-8 w-8 text-black" />
+            <BookOpen className="h-8 w-8 text-gray-900" />
             <h1 className="text-2xl font-bold text-gray-900">Journey</h1>
           </div>
-          <div className="flex items-center gap-4 text-xs text-gray-500">
+          <div className="flex items-center gap-4 text-xs text-gray-600">
             <Link 
               href="https://x.com/pepealonsog" 
               target="_blank"
@@ -120,7 +120,7 @@ export default function Home() {
             >
               Built by @pepealonsog
             </Link>
-            <span className="text-gray-300">•</span>
+            <span className="text-gray-400">•</span>
             <Link 
               href="https://github.com/pepealonso95/journey/tree/main" 
               target="_blank"
@@ -151,15 +151,15 @@ export default function Home() {
                 Try it now - No sign in required
               </Link>
             </Button>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-600">
               Create and share a list instantly
             </p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-6 mt-12">
             <div className="text-center">
-              <div className="bg-black/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="h-8 w-8 text-black" />
+              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <BookOpen className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold mb-2 text-gray-900">Curate Lists</h3>
               <p className="text-gray-600">
@@ -168,8 +168,8 @@ export default function Home() {
             </div>
 
             <div className="text-center">
-              <div className="bg-black/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Plus className="h-8 w-8 text-black" />
+              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Plus className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold mb-2 text-gray-900">Easy Sharing</h3>
               <p className="text-gray-600">
@@ -178,8 +178,8 @@ export default function Home() {
             </div>
 
             <div className="text-center">
-              <div className="bg-black/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Twitter className="h-8 w-8 text-black" />
+              <div className="bg-blue-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <Twitter className="h-8 w-8 text-blue-600" />
               </div>
               <h3 className="text-lg font-semibold mb-2 text-gray-900">Social Discovery</h3>
               <p className="text-gray-600">
@@ -190,7 +190,7 @@ export default function Home() {
           
           {/* Subtle sign-in option */}
           <div className="mt-12 text-center">
-            <p className="text-sm text-gray-500 mb-3">
+            <p className="text-sm text-gray-600 mb-3">
               Want to save and manage your lists?
             </p>
             <Button 

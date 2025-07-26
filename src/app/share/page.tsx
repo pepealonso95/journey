@@ -1,323 +1,186 @@
-"use client";
+import { Metadata } from 'next';
+import { parseShareUrl } from '@/lib/share-url';
+import { getBookById } from '@/lib/google-books';
+import SharePageClient from './SharePageClient';
 
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState, Suspense } from "react";
-import { parseShareUrl } from "@/lib/share-url";
-import { getBookById } from "@/lib/google-books";
-import type { GoogleBook } from "@/lib/google-books";
-import Link from "next/link";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Copy, Loader2, BookOpen, ChevronRight } from "lucide-react";
-import { Header } from "@/components/layout";
+// Force dynamic rendering since we use searchParams
+export const dynamic = 'force-dynamic';
 
-// Utility function to clean HTML tags from descriptions
-function cleanDescription(description: string): string {
-  return description
-    .replace(/<br\s*\/?>/gi, ' ') // Replace <br> tags with spaces
-    .replace(/<[^>]*>/g, '') // Remove all other HTML tags
-    .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-    .trim();
+interface SharePageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-function SharePageContent() {
-  const searchParams = useSearchParams();
-  const [books, setBooks] = useState<GoogleBook[]>([]);
-  const [listTitle, setListTitle] = useState<string | undefined>();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    async function loadBooks() {
-      const parseResult = parseShareUrl(searchParams);
-      
-      if (!parseResult) {
-        setError("Invalid share link");
-        setLoading(false);
-        return;
+export async function generateMetadata({
+  searchParams,
+}: SharePageProps): Promise<Metadata> {
+  try {
+    // Await searchParams for Next.js 15
+    const params = await searchParams;
+    
+    // Convert searchParams to URLSearchParams
+    const urlSearchParams = new URLSearchParams();
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        urlSearchParams.set(key, Array.isArray(value) ? value[0] : value);
       }
+    });
 
-      const { bookIds, title } = parseResult;
-      setListTitle(title);
-
-      try {
-        const bookPromises = bookIds.map(id => getBookById(id));
-        const loadedBooks = await Promise.all(bookPromises);
-        
-        // Filter out any failed loads but maintain order
-        const validBooks = loadedBooks.filter(book => book !== null) as GoogleBook[];
-        
-        if (validBooks.length !== bookIds.length) {
-          setError("Some books could not be loaded");
-        }
-        
-        setBooks(validBooks);
-      } catch (err) {
-        console.error("Error loading books:", err);
-        setError("Failed to load books");
-      } finally {
-        setLoading(false);
-      }
+    const parseResult = parseShareUrl(urlSearchParams);
+    
+    if (!parseResult) {
+      const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}` 
+        : 'http://localhost:3000';
+      const defaultImageUrl = `${baseUrl}/api/og`;
+      return {
+        title: 'Journey - Share Your Reading Journey',
+        description: 'Discover and share curated book lists with Journey',
+        openGraph: {
+          title: 'Journey - Share Your Reading Journey',
+          description: 'Discover and share curated book lists with Journey',
+          type: 'website',
+          url: `${baseUrl}/share`,
+          siteName: 'Journey',
+          images: [{
+            url: defaultImageUrl,
+            width: 1200,
+            height: 630,
+            alt: 'Journey - Share Your Reading Journey',
+          }],
+        },
+        twitter: {
+          card: 'summary_large_image',
+          title: 'Journey - Share Your Reading Journey',
+          description: 'Discover and share curated book lists with Journey',
+          images: [defaultImageUrl],
+          creator: '@pepealonsog',
+          site: '@pepealonsog',
+        },
+        other: {
+          'linkedin:owner': 'Journey',
+          'article:author': 'Journey',
+          'article:section': 'Books',
+          'image': defaultImageUrl,
+          'image:width': '1200',
+          'image:height': '630',
+          'image:alt': 'Journey - Share Your Reading Journey',
+        },
+      };
     }
 
-    loadBooks();
-  }, [searchParams]);
+    const { bookIds, title } = parseResult;
+    const listTitle = title || 'Reading List';
 
-  const handleCopyLink = async () => {
+    // Fetch first book for description
+    let description = `Check out this curated reading list: ${listTitle}`;
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
+      const bookTitles = await Promise.all(
+        bookIds.slice(0, 2).map(async (id) => {
+          try {
+            const book = await getBookById(id);
+            return book?.volumeInfo.title;
+          } catch {
+            return null;
+          }
+        })
+      );
+      const validTitles = bookTitles.filter(Boolean);
+      if (validTitles.length > 0) {
+        description = `${listTitle} featuring ${validTitles.join(', ')}${bookIds.length > 2 ? ` and ${bookIds.length - 2} more books` : ''}`;
+      }
+    } catch {
+      // Use default description
     }
-  };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    );
+    // Build OG image URL with query params
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'http://localhost:3000';
+    const ogImageUrl = new URL('/api/og', baseUrl);
+    ogImageUrl.searchParams.set('books', bookIds.join(','));
+    ogImageUrl.searchParams.set('title', listTitle);
+
+    return {
+      title: `${listTitle} - Journey`,
+      description,
+      openGraph: {
+        title: `${listTitle} - Journey`,
+        description,
+        type: 'website',
+        url: `${baseUrl}/share?${urlSearchParams.toString()}`,
+        siteName: 'Journey',
+        images: [{
+          url: ogImageUrl.toString(),
+          width: 1200,
+          height: 630,
+          alt: `${listTitle} - A curated reading list on Journey`,
+        }],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: `${listTitle} - Journey`,
+        description,
+        images: [ogImageUrl.toString()],
+        creator: '@pepealonsog',
+        site: '@pepealonsog',
+      },
+      // Additional meta tags for broader compatibility
+      other: {
+        // LinkedIn specific
+        'linkedin:owner': 'Journey',
+        // WhatsApp/Telegram compatibility
+        'article:author': 'Journey',
+        'article:section': 'Books',
+        // General social media
+        'image': ogImageUrl.toString(),
+        'image:width': '1200',
+        'image:height': '630',
+        'image:alt': `${listTitle} - A curated reading list on Journey`,
+      },
+    };
+  } catch (error) {
+    console.error('Error generating metadata:', error);
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'http://localhost:3000';
+    const defaultImageUrl = `${baseUrl}/api/og`;
+    return {
+      title: 'Journey - Share Your Reading Journey',
+      description: 'Discover and share curated book lists with Journey',
+      openGraph: {
+        title: 'Journey - Share Your Reading Journey',
+        description: 'Discover and share curated book lists with Journey',
+        type: 'website',
+        url: `${baseUrl}/share`,
+        siteName: 'Journey',
+        images: [{
+          url: defaultImageUrl,
+          width: 1200,
+          height: 630,
+          alt: 'Journey - Share Your Reading Journey',
+        }],
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: 'Journey - Share Your Reading Journey',
+        description: 'Discover and share curated book lists with Journey',
+        images: [defaultImageUrl],
+        creator: '@pepealonsog',
+        site: '@pepealonsog',
+      },
+      other: {
+        'linkedin:owner': 'Journey',
+        'article:author': 'Journey',
+        'article:section': 'Books',
+        'image': defaultImageUrl,
+        'image:width': '1200',
+        'image:height': '630',
+        'image:alt': 'Journey - Share Your Reading Journey',
+      },
+    };
   }
-
-  if (error || books.length === 0) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <BookOpen className="h-12 w-12 text-gray-400 mb-4" />
-        <h1 className="text-2xl font-semibold text-gray-900 mb-2">
-          {error || "No books found"}
-        </h1>
-        <p className="text-gray-600 mb-8">
-          This share link appears to be invalid or expired.
-        </p>
-        <Link href="/create">
-          <Button>Create Your Own List</Button>
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-white">
-      <Header>
-        <Link href="/" className="inline-flex items-center text-gray-600 hover:text-gray-900">
-          <ChevronRight className="h-4 w-4 mr-1" />
-          Journey
-        </Link>
-      </Header>
-      <main className="max-w-6xl mx-auto px-4 py-4">
-        {/* List Title */}
-        {listTitle && (
-          <div className="text-center mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">
-              {listTitle}
-            </h1>
-          </div>
-        )}
-        {/* Desktop: 4-column grid */}
-        <div className="hidden lg:grid lg:grid-cols-4 gap-12">
-          {books.map((book, index) => (
-            <div key={book.id} className="text-center">
-              {/* Book Cover */}
-              <div className="mb-6">
-                <div className="relative w-48 h-72 mx-auto mb-4">
-                  {book.volumeInfo.imageLinks?.thumbnail ? (
-                    <Image
-                      src={book.volumeInfo.imageLinks.thumbnail}
-                      alt={book.volumeInfo.title}
-                      fill
-                      className="object-cover rounded-lg shadow-lg"
-                      sizes="192px"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-200 rounded-lg">
-                      <span className="text-sm text-gray-500">No cover</span>
-                    </div>
-                  )}
-                </div>
-                <div className="inline-flex items-center justify-center w-8 h-8 bg-gray-900 text-white rounded-full text-sm font-medium">
-                  {index + 1}
-                </div>
-              </div>
-
-              {/* Book Details */}
-              <div className="text-left">
-                <h2 className="text-xl font-semibold text-gray-900 mb-3 leading-tight">
-                  {book.volumeInfo.title}
-                </h2>
-                
-                {book.volumeInfo.authors && (
-                  <p className="text-lg text-gray-600 mb-4">
-                    {book.volumeInfo.authors.join(", ")}
-                  </p>
-                )}
-                
-                {book.volumeInfo.description && (
-                  <p className="text-gray-500 leading-relaxed text-sm line-clamp-6">
-                    {cleanDescription(book.volumeInfo.description)}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Tablet: 2x2 Grid */}
-        <div className="hidden md:grid md:grid-cols-2 lg:hidden gap-12">
-          {books.map((book, index) => (
-            <div key={book.id} className="text-center">
-              {/* Book Cover */}
-              <div className="mb-6">
-                <div className="relative w-40 h-60 mx-auto mb-4">
-                  {book.volumeInfo.imageLinks?.thumbnail ? (
-                    <Image
-                      src={book.volumeInfo.imageLinks.thumbnail}
-                      alt={book.volumeInfo.title}
-                      fill
-                      className="object-cover rounded-lg shadow-lg"
-                      sizes="160px"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-200 rounded-lg">
-                      <span className="text-sm text-gray-500">No cover</span>
-                    </div>
-                  )}
-                </div>
-                <div className="inline-flex items-center justify-center w-8 h-8 bg-gray-900 text-white rounded-full text-sm font-medium">
-                  {index + 1}
-                </div>
-              </div>
-
-              {/* Book Details */}
-              <div className="text-left">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3 leading-tight">
-                  {book.volumeInfo.title}
-                </h2>
-                
-                {book.volumeInfo.authors && (
-                  <p className="text-base text-gray-600 mb-3">
-                    {book.volumeInfo.authors.join(", ")}
-                  </p>
-                )}
-                
-                {book.volumeInfo.description && (
-                  <p className="text-gray-500 leading-relaxed text-sm line-clamp-4">
-                    {cleanDescription(book.volumeInfo.description)}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Mobile: Single column */}
-        <div className="md:hidden space-y-12">
-          {books.map((book, index) => (
-            <div key={book.id} className="text-center">
-              {/* Book Cover */}
-              <div className="mb-6">
-                <div className="relative w-32 h-48 mx-auto mb-4">
-                  {book.volumeInfo.imageLinks?.thumbnail ? (
-                    <Image
-                      src={book.volumeInfo.imageLinks.thumbnail}
-                      alt={book.volumeInfo.title}
-                      fill
-                      className="object-cover rounded-lg shadow-lg"
-                      sizes="128px"
-                    />
-                  ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-200 rounded-lg">
-                      <span className="text-sm text-gray-500">No cover</span>
-                    </div>
-                  )}
-                </div>
-                <div className="inline-flex items-center justify-center w-8 h-8 bg-gray-900 text-white rounded-full text-sm font-medium">
-                  {index + 1}
-                </div>
-              </div>
-
-              {/* Book Details */}
-              <div className="text-left">
-                <h2 className="text-lg font-semibold text-gray-900 mb-3 leading-tight">
-                  {book.volumeInfo.title}
-                </h2>
-                
-                {book.volumeInfo.authors && (
-                  <p className="text-base text-gray-600 mb-3">
-                    {book.volumeInfo.authors.join(", ")}
-                  </p>
-                )}
-                
-                {book.volumeInfo.description && (
-                  <p className="text-gray-500 leading-relaxed text-sm line-clamp-4">
-                    {cleanDescription(book.volumeInfo.description)}
-                  </p>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Action Bar */}
-        <div className="mt-6">
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-gray-50 rounded-lg p-6">
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                  Like this list?
-                </h3>
-                <p className="text-gray-600 text-sm">
-                  Share it, modify it, or save it to your account
-                </p>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Button 
-                  onClick={handleCopyLink} 
-                  variant="outline" 
-                  className="flex items-center justify-center gap-2"
-                >
-                  <Copy className="h-4 w-4" />
-                  {copied ? "Copied!" : "Share"}
-                </Button>
-                
-                <Link href="/create" className="flex">
-                  <Button variant="outline" className="flex-1 flex items-center justify-center gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    Modify List
-                  </Button>
-                </Link>
-                
-                <Link href="/api/auth/signin" className="flex">
-                  <Button className="flex-1">
-                    Save to Account
-                  </Button>
-                </Link>
-              </div>
-              
-              <div className="mt-3 text-center">
-                <Link href="/create" className="text-sm text-gray-500 hover:text-gray-700">
-                  or create your own list from scratch →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
 }
 
 export default function SharePage() {
-  return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    }>
-      <SharePageContent />
-    </Suspense>
-  );
+  return <SharePageClient />;
 }

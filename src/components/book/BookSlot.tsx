@@ -14,7 +14,7 @@ export function BookSlot({ book, index, onRemove }: BookSlotProps) {
     <div className="relative">
       <div className={cn(
         "relative aspect-[2/3] rounded-md overflow-hidden mb-2",
-        book ? "shadow-md" : "bg-gray-100"
+        book ? "shadow-md" : "bg-gray-100 border-2 border-dashed border-gray-300"
       )}>
         {book ? (
           <>
@@ -48,7 +48,7 @@ export function BookSlot({ book, index, onRemove }: BookSlotProps) {
       </div>
       {book ? (
         <div>
-          <h3 className="font-medium text-xs line-clamp-2 mb-1">
+          <h3 className="font-medium text-xs line-clamp-2 mb-1 text-gray-900">
             {book.volumeInfo.title}
           </h3>
           {book.volumeInfo.authors && (
@@ -59,7 +59,7 @@ export function BookSlot({ book, index, onRemove }: BookSlotProps) {
         </div>
       ) : (
         <div className="text-center">
-          <p className="text-xs text-gray-400">Empty</p>
+          <p className="text-xs text-gray-500">Empty</p>
         </div>
       )}
     </div>

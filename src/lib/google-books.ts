@@ -34,7 +34,9 @@ export interface GoogleBooksResponse {
 const BASE_URL = 'https://www.googleapis.com/books/v1/volumes';
 
 function getApiKey(): string {
-  return process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY || process.env.GOOGLE_BOOKS_API_KEY || '';
+  // In edge runtime, prioritize NEXT_PUBLIC_ variables as they're available at build time
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_BOOKS_API_KEY || process.env.GOOGLE_BOOKS_API_KEY || '';
+  return apiKey;
 }
 
 export async function searchBooks(query: string, maxResults = 10): Promise<GoogleBook[]> {
@@ -58,10 +60,16 @@ export async function searchBooks(query: string, maxResults = 10): Promise<Googl
 }
 
 export async function getBookById(id: string): Promise<GoogleBook | null> {
-  const url = `${BASE_URL}/${id}?key=${getApiKey()}`;
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error('Google Books API key not configured');
+  }
+  
+  const url = `${BASE_URL}/${id}?key=${apiKey}`;
 
   try {
     const response = await fetch(url.toString());
+    
     if (!response.ok) {
       if (response.status === 404) {
         return null;
@@ -69,10 +77,11 @@ export async function getBookById(id: string): Promise<GoogleBook | null> {
       throw new Error(`Google Books API error: ${response.status}`);
     }
 
-    return await response.json();
+    const book = await response.json();
+    return book;
   } catch (error) {
-    console.error('Google Books API error:', error);
-    throw new Error('Failed to get book details');
+    console.error(`Google Books API error for book ${id}:`, error);
+    throw error;
   }
 }
 

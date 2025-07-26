@@ -14,7 +14,7 @@ export function SearchResults({ results, books, maxSize, onSelectBook }: SearchR
 
   return (
     <div>
-      <h3 className="text-sm text-gray-500 mb-3">
+      <h3 className="text-sm text-muted-foreground mb-3">
         {results.length} results
       </h3>
       
@@ -44,13 +44,13 @@ export function SearchResults({ results, books, maxSize, onSelectBook }: SearchR
                       sizes="128px"
                     />
                   ) : (
-                    <div className="flex items-center justify-center h-full bg-gray-200 rounded shadow-md">
-                      <span className="text-xs text-gray-500">No cover</span>
+                    <div className="flex items-center justify-center h-full bg-muted rounded shadow-md">
+                      <span className="text-xs text-muted-foreground">No cover</span>
                     </div>
                   )}
                   {isAdded && (
                     <div className="absolute inset-0 bg-black/20 rounded flex items-center justify-center">
-                      <span className="text-white text-xs font-medium">Added</span>
+                      <span className="text-primary-foreground text-xs font-medium">Added</span>
                     </div>
                   )}
                 </div>
@@ -58,7 +58,7 @@ export function SearchResults({ results, books, maxSize, onSelectBook }: SearchR
                   {book.volumeInfo.title}
                 </h4>
                 {book.volumeInfo.authors && (
-                  <p className="text-xs text-gray-600 line-clamp-1 max-w-[128px]">
+                  <p className="text-xs text-muted-foreground line-clamp-1 max-w-[128px]">
                     {book.volumeInfo.authors[0]}
                   </p>
                 )}
@@ -107,7 +107,7 @@ export function SearchResults({ results, books, maxSize, onSelectBook }: SearchR
                 {book.volumeInfo.title}
               </h4>
               {book.volumeInfo.authors && (
-                <p className="text-xs text-gray-600 line-clamp-1">
+                <p className="text-xs text-muted-foreground line-clamp-1">
                   {book.volumeInfo.authors[0]}
                 </p>
               )}

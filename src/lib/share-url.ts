@@ -13,8 +13,12 @@ export interface AnonymousBookList {
  * Encode book IDs into a URL-safe string
  */
 export function encodeBookList(bookIds: string[]): string {
-  if (bookIds.length !== ANONYMOUS_LIST_SIZE) {
-    throw new Error(`Book list must contain exactly ${ANONYMOUS_LIST_SIZE} books`);
+  if (bookIds.length === 0) {
+    throw new Error('Book list cannot be empty');
+  }
+  
+  if (bookIds.length > ANONYMOUS_LIST_SIZE) {
+    throw new Error(`Book list cannot contain more than ${ANONYMOUS_LIST_SIZE} books`);
   }
   
   // Simple comma-separated format for readability
@@ -27,8 +31,12 @@ export function encodeBookList(bookIds: string[]): string {
 export function decodeBookList(encoded: string): string[] {
   const bookIds = encoded.split(',').filter(Boolean);
   
-  if (bookIds.length !== ANONYMOUS_LIST_SIZE) {
-    throw new Error(`Invalid book list: expected ${ANONYMOUS_LIST_SIZE} books, got ${bookIds.length}`);
+  if (bookIds.length === 0) {
+    throw new Error('Invalid book list: cannot be empty');
+  }
+  
+  if (bookIds.length > ANONYMOUS_LIST_SIZE) {
+    throw new Error(`Invalid book list: cannot contain more than ${ANONYMOUS_LIST_SIZE} books, got ${bookIds.length}`);
   }
   
   return bookIds;
