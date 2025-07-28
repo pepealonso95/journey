@@ -28,9 +28,7 @@ export async function generateMetadata({
     const parseResult = parseShareUrl(urlSearchParams);
     
     if (!parseResult) {
-      const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL 
-        ? `https://${process.env.VERCEL_URL}` 
-        : 'http://localhost:3000';
+      const baseUrl = process.env.NEXTAUTH_URL || 'https://www.readjourney.link';
       const defaultImageUrl = `${baseUrl}/api/og`;
       return {
         title: 'Journey - Share Your Reading Journey',
@@ -93,9 +91,7 @@ export async function generateMetadata({
     }
 
     // Build OG image URL with query params
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : 'http://localhost:3000';
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://www.readjourney.link';
     const ogImageUrl = new URL('/api/og', baseUrl);
     ogImageUrl.searchParams.set('books', bookIds.join(','));
     ogImageUrl.searchParams.set('title', listTitle);
@@ -140,9 +136,7 @@ export async function generateMetadata({
     };
   } catch (error) {
     console.error('Error generating metadata:', error);
-    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL 
-      ? `https://${process.env.VERCEL_URL}` 
-      : 'http://localhost:3000';
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://www.readjourney.link';
     const defaultImageUrl = `${baseUrl}/api/og`;
     return {
       title: 'Journey - Share Your Reading Journey',

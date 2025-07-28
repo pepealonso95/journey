@@ -1,0 +1,1 @@
+ALTER TABLE "journey_user" ALTER COLUMN "email" DROP NOT NULL;

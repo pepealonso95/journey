@@ -10,7 +10,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "cache:cleanup": "tsx src/scripts/cleanup-cache.ts",
+    "lists:cleanup": "tsx src/scripts/cleanup-expired-lists.ts"
   },
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
@@ -30,6 +32,7 @@
     "@trpc/next": "^11.4.3",
     "@trpc/react-query": "^11.4.3",
     "@trpc/server": "^11.4.3",
+    "@vercel/analytics": "^1.5.0",
     "@vercel/og": "^0.8.5",
     "@vercel/postgres": "^0.10.0",
     "class-variance-authority": "^0.7.1",
@@ -47,6 +50,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

@@ -90,6 +90,12 @@ export async function getBookById(id: string): Promise<GoogleBook | null> {
  */
 export function transformToDbFormat(googleBook: GoogleBook) {
   const { id, volumeInfo } = googleBook;
+  
+  // Validate required fields
+  if (!id || !volumeInfo?.title) {
+    throw new Error(`Invalid book data: missing id (${id}) or title (${volumeInfo?.title})`);
+  }
+  
   const imageLinks = volumeInfo.imageLinks || {};
   
   // Extract ISBN identifiers

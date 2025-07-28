@@ -10,7 +10,6 @@ import {
   varchar,
   boolean,
 } from 'drizzle-orm/pg-core';
-import { type AdapterAccount } from 'next-auth/adapters';
 import { createId } from '@paralleldrive/cuid2';
 
 export const createTable = pgTableCreator((name) => `journey_${name}`);
@@ -18,71 +17,21 @@ export const createTable = pgTableCreator((name) => `journey_${name}`);
 export const users = createTable('user', {
   id: varchar('id', { length: 255 }).notNull().primaryKey().$defaultFn(() => createId()),
   name: varchar('name', { length: 255 }),
-  email: varchar('email', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }),
   emailVerified: timestamp('emailVerified', {
     mode: 'date',
   }).default(sql`CURRENT_TIMESTAMP`),
   image: varchar('image', { length: 255 }),
   username: varchar('username', { length: 50 }).unique(),
   bio: text('bio'),
+  twitterHandle: varchar('twitter_handle', { length: 50 }).unique(),
+  twitterProfileUrl: varchar('twitter_profile_url', { length: 255 }),
+  createdAt: timestamp('created_at').default(sql`CURRENT_TIMESTAMP`).notNull(),
 });
 
-export const accounts = createTable(
-  'account',
-  {
-    userId: varchar('userId', { length: 255 })
-      .notNull()
-      .references(() => users.id),
-    type: varchar('type', { length: 255 })
-      .$type<AdapterAccount['type']>()
-      .notNull(),
-    provider: varchar('provider', { length: 255 }).notNull(),
-    providerAccountId: varchar('providerAccountId', {
-      length: 255,
-    }).notNull(),
-    refresh_token: text('refresh_token'),
-    access_token: text('access_token'),
-    expires_at: integer('expires_at'),
-    token_type: varchar('token_type', { length: 255 }),
-    scope: varchar('scope', { length: 255 }),
-    id_token: text('id_token'),
-    session_state: varchar('session_state', { length: 255 }),
-  },
-  (account) => ({
-    compoundKey: primaryKey({
-      columns: [account.provider, account.providerAccountId],
-    }),
-    userIdIdx: index('account_userId_idx').on(account.userId),
-  })
-);
 
-export const sessions = createTable(
-  'session',
-  {
-    sessionToken: varchar('sessionToken', { length: 255 })
-      .notNull()
-      .primaryKey(),
-    userId: varchar('userId', { length: 255 })
-      .notNull()
-      .references(() => users.id),
-    expires: timestamp('expires', { mode: 'date' }).notNull(),
-  },
-  (session) => ({
-    userIdIdx: index('session_userId_idx').on(session.userId),
-  })
-);
 
-export const verificationTokens = createTable(
-  'verificationToken',
-  {
-    identifier: varchar('identifier', { length: 255 }).notNull(),
-    token: varchar('token', { length: 255 }).notNull(),
-    expires: timestamp('expires', { mode: 'date' }).notNull(),
-  },
-  (vt) => ({
-    compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  })
-);
+
 
 export const books = createTable('book', {
   id: varchar('id', { length: 255 }).notNull().primaryKey(), // Google Books ID
@@ -103,6 +52,8 @@ export const books = createTable('book', {
   previewLink: varchar('previewLink', { length: 1000 }),
   infoLink: varchar('infoLink', { length: 1000 }),
   canonicalVolumeLink: varchar('canonicalVolumeLink', { length: 1000 }),
+  lastAccessed: timestamp('last_accessed').default(sql`CURRENT_TIMESTAMP`),
+  accessCount: integer('access_count').default(0).notNull(),
   createdAt: timestamp('created_at')
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),
@@ -115,10 +66,12 @@ export const bookLists = createTable(
     title: varchar('title', { length: 100 }).notNull(),
     description: text('description'),
     userId: varchar('userId', { length: 255 })
-      .notNull()
-      .references(() => users.id),
+      .references(() => users.id), // Made nullable for anonymous lists
     isPublic: boolean('isPublic').default(true).notNull(),
-    slug: varchar('slug', { length: 150 }).notNull(),
+    isAnonymous: boolean('isAnonymous').default(false).notNull(),
+    slug: varchar('slug', { length: 150 }).notNull().unique(),
+    expiresAt: timestamp('expires_at'), // For anonymous list cleanup
+    likeCount: integer('like_count').default(0).notNull(),
     createdAt: timestamp('created_at')
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -129,6 +82,8 @@ export const bookLists = createTable(
   (bookList) => ({
     userIdIdx: index('bookList_userId_idx').on(bookList.userId),
     slugIdx: index('bookList_slug_idx').on(bookList.slug),
+    isAnonymousIdx: index('bookList_isAnonymous_idx').on(bookList.isAnonymous),
+    expiresAtIdx: index('bookList_expiresAt_idx').on(bookList.expiresAt),
   })
 );
 
@@ -143,6 +98,7 @@ export const bookListItems = createTable(
       .notNull()
       .references(() => books.id),
     sortOrder: integer('sortOrder').notNull(), // 0-3 for reading order (4 books)
+    customDescription: text('customDescription'), // User's note about why this book is included
     createdAt: timestamp('created_at')
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -156,24 +112,37 @@ export const bookListItems = createTable(
   })
 );
 
+export const bookListLikes = createTable(
+  'bookListLike',
+  {
+    id: serial('id').primaryKey(),
+    userId: varchar('userId', { length: 255 })
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    bookListId: integer('bookListId')
+      .notNull()
+      .references(() => bookLists.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (like) => ({
+    userIdIdx: index('bookListLike_userId_idx').on(like.userId),
+    bookListIdIdx: index('bookListLike_bookListId_idx').on(like.bookListId),
+    uniqueLike: index('bookListLike_unique_idx').on(like.userId, like.bookListId),
+  })
+);
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
-  accounts: many(accounts),
-  sessions: many(sessions),
   bookLists: many(bookLists),
-}));
-
-export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, { fields: [accounts.userId], references: [users.id] }),
-}));
-
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-  user: one(users, { fields: [sessions.userId], references: [users.id] }),
+  likes: many(bookListLikes),
 }));
 
 export const bookListsRelations = relations(bookLists, ({ one, many }) => ({
   user: one(users, { fields: [bookLists.userId], references: [users.id] }),
   items: many(bookListItems),
+  likes: many(bookListLikes),
 }));
 
 export const bookListItemsRelations = relations(bookListItems, ({ one }) => ({
@@ -183,6 +152,30 @@ export const bookListItemsRelations = relations(bookListItems, ({ one }) => ({
   }),
   book: one(books, { fields: [bookListItems.bookId], references: [books.id] }),
 }));
+
+export const bookListLikesRelations = relations(bookListLikes, ({ one }) => ({
+  user: one(users, { fields: [bookListLikes.userId], references: [users.id] }),
+  bookList: one(bookLists, { fields: [bookListLikes.bookListId], references: [bookLists.id] }),
+}));
+
+// Search cache table for temporary search results
+export const searchCache = createTable(
+  'searchCache',
+  {
+    id: serial('id').primaryKey(),
+    query: varchar('query', { length: 255 }).notNull(),
+    results: text('results').notNull(), // JSON array of book IDs
+    resultCount: integer('resultCount').notNull(),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    expiresAt: timestamp('expires_at').notNull(),
+  },
+  (cache) => ({
+    queryIdx: index('searchCache_query_idx').on(cache.query),
+    expiresAtIdx: index('searchCache_expiresAt_idx').on(cache.expiresAt),
+  })
+);
 
 export const booksRelations = relations(books, ({ many }) => ({
   listItems: many(bookListItems),

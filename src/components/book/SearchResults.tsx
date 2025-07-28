@@ -7,15 +7,19 @@ interface SearchResultsProps {
   books: GoogleBook[];
   maxSize: number;
   onSelectBook: (book: GoogleBook) => void;
+  isSuggestions?: boolean;
+  suggestionsMessage?: string;
 }
 
-export function SearchResults({ results, books, maxSize, onSelectBook }: SearchResultsProps) {
+export function SearchResults({ results, books, maxSize, onSelectBook, isSuggestions, suggestionsMessage }: SearchResultsProps) {
   if (results.length === 0) return null;
 
   return (
     <div>
       <h3 className="text-sm text-muted-foreground mb-3">
-        {results.length} results
+        {isSuggestions 
+          ? (suggestionsMessage || "Suggestions similar to selected books")
+          : `${results.length} results`}
       </h3>
       
       {/* Desktop: Horizontal scroll */}
@@ -35,9 +39,9 @@ export function SearchResults({ results, books, maxSize, onSelectBook }: SearchR
                 )}
               >
                 <div className="relative w-32 h-48 mb-2">
-                  {book.volumeInfo.imageLinks?.thumbnail ? (
+                  {book.volumeInfo.imageLinks?.large || book.volumeInfo.imageLinks?.medium || book.volumeInfo.imageLinks?.thumbnail ? (
                     <Image
-                      src={book.volumeInfo.imageLinks.thumbnail}
+                      src={book.volumeInfo.imageLinks.large || book.volumeInfo.imageLinks.medium || book.volumeInfo.imageLinks.thumbnail || ''}
                       alt={book.volumeInfo.title}
                       fill
                       className="object-cover rounded shadow-md"
@@ -84,9 +88,9 @@ export function SearchResults({ results, books, maxSize, onSelectBook }: SearchR
               )}
             >
               <div className="relative aspect-[2/3] mb-2">
-                {book.volumeInfo.imageLinks?.thumbnail ? (
+                {book.volumeInfo.imageLinks?.large || book.volumeInfo.imageLinks?.medium || book.volumeInfo.imageLinks?.thumbnail ? (
                   <Image
-                    src={book.volumeInfo.imageLinks.thumbnail}
+                    src={book.volumeInfo.imageLinks.large || book.volumeInfo.imageLinks.medium || book.volumeInfo.imageLinks.thumbnail || ''}
                     alt={book.volumeInfo.title}
                     fill
                     className="object-cover rounded shadow-md"

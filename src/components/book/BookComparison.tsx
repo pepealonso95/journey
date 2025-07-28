@@ -26,9 +26,9 @@ export function BookComparison({ comparison, onChoice }: BookComparisonProps) {
         >
           <div className="flex items-start gap-4">
             <div className="relative w-20 h-32 flex-shrink-0">
-              {comparison.newBook.volumeInfo.imageLinks?.thumbnail ? (
+              {comparison.newBook.volumeInfo.imageLinks?.large || comparison.newBook.volumeInfo.imageLinks?.medium || comparison.newBook.volumeInfo.imageLinks?.thumbnail ? (
                 <Image
-                  src={comparison.newBook.volumeInfo.imageLinks.thumbnail}
+                  src={comparison.newBook.volumeInfo.imageLinks.large || comparison.newBook.volumeInfo.imageLinks.medium || comparison.newBook.volumeInfo.imageLinks.thumbnail || ''}
                   alt={comparison.newBook.volumeInfo.title}
                   fill
                   className="object-cover rounded"
@@ -60,9 +60,9 @@ export function BookComparison({ comparison, onChoice }: BookComparisonProps) {
         >
           <div className="flex items-start gap-4">
             <div className="relative w-20 h-32 flex-shrink-0">
-              {comparison.existingBook.volumeInfo.imageLinks?.thumbnail ? (
+              {comparison.existingBook.volumeInfo.imageLinks?.large || comparison.existingBook.volumeInfo.imageLinks?.medium || comparison.existingBook.volumeInfo.imageLinks?.thumbnail ? (
                 <Image
-                  src={comparison.existingBook.volumeInfo.imageLinks.thumbnail}
+                  src={comparison.existingBook.volumeInfo.imageLinks.large || comparison.existingBook.volumeInfo.imageLinks.medium || comparison.existingBook.volumeInfo.imageLinks.thumbnail || ''}
                   alt={comparison.existingBook.volumeInfo.title}
                   fill
                   className="object-cover rounded"

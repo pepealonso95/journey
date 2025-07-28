@@ -1,8 +1,10 @@
 import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { type NextAuthOptions } from 'next-auth';
 import TwitterProvider from 'next-auth/providers/twitter';
+import { eq } from 'drizzle-orm';
 import { db } from '@/server/db';
-import { users, accounts, sessions, verificationTokens } from '@/server/db/schema';
+import { users } from '@/server/db/schema';
+import { accounts, sessions, verificationTokens } from '@/server/db/auth-schema';
 
 export const authOptions: NextAuthOptions = {
   adapter: DrizzleAdapter(db, {
@@ -19,6 +21,31 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account, profile }) {
+      // If signing in with Twitter, extract the username (handle)
+      if (account?.provider === 'twitter' && profile) {
+        const twitterProfile = profile as any;
+        const twitterHandle = twitterProfile.data?.username || twitterProfile.username;
+        const twitterProfileUrl = `https://twitter.com/${twitterHandle}`;
+        
+        // Update user with Twitter data
+        if (twitterHandle && user.id) {
+          try {
+            await db.update(users)
+              .set({
+                twitterHandle,
+                twitterProfileUrl,
+                username: twitterHandle, // Also set username field for compatibility
+              })
+              .where(eq(users.id, user.id));
+          } catch (error) {
+            console.error('Failed to update user Twitter data:', error);
+            // Don't block sign in if this fails
+          }
+        }
+      }
+      return true;
+    },
     session: ({ session, user }) => ({
       ...session,
       user: {

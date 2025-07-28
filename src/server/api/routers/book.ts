@@ -1,16 +1,17 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure, protectedProcedure } from '@/lib/trpc';
-import { searchBooks, getBookById, transformToDbFormat } from '@/lib/google-books';
+import { getBookById, transformToDbFormat } from '@/lib/google-books';
+import { BookCacheService } from '@/lib/book-cache';
 import { db } from '@/server/db';
 import { books, bookListItems } from '@/server/db/schema';
-import { eq, and, gte, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, lt, sql } from 'drizzle-orm';
 
 export const bookRouter = createTRPCRouter({
   search: publicProcedure
     .input(z.object({ query: z.string().min(1) }))
     .query(async ({ input }) => {
       try {
-        const results = await searchBooks(input.query, 20);
+        const results = await BookCacheService.searchBooksWithCache(input.query, 20);
         return results.map((book) => ({
           id: book.id,
           title: book.volumeInfo.title,
@@ -33,6 +34,71 @@ export const bookRouter = createTRPCRouter({
       }
     }),
 
+  getSuggestions: publicProcedure
+    .input(z.object({ 
+      categories: z.array(z.string().max(100)).min(1).max(10), // Limit category length and count
+      excludeBookIds: z.array(z.string().regex(/^[a-zA-Z0-9_-]+$/)).optional() // Only allow safe book ID characters
+    }))
+    .query(async ({ input }) => {
+      try {
+        const { categories, excludeBookIds = [] } = input;
+        
+        console.log('Searching for suggestions with categories:', categories);
+        console.log('Excluding book IDs:', excludeBookIds);
+        
+        // First, let's see what books we have in the database
+        const allBooks = await db.select().from(books).limit(5);
+        console.log('Sample books in database:', allBooks.map(b => ({
+          id: b.id,
+          title: b.title,
+          categories: b.categories
+        })));
+        
+        // Search only in local database for books with matching categories
+        let whereClause;
+        
+        // Build where clause conditions
+        if (categories.length > 0 && excludeBookIds.length > 0) {
+          whereClause = and(
+            sql`${books.categories}::jsonb ?| ${categories}`,
+            sql`${books.id} != ALL(${excludeBookIds})`
+          );
+        } else if (categories.length > 0) {
+          whereClause = sql`${books.categories}::jsonb ?| ${categories}`;
+        } else if (excludeBookIds.length > 0) {
+          whereClause = sql`${books.id} != ALL(${excludeBookIds})`;
+        }
+        
+        const query = whereClause 
+          ? db.select().from(books).where(whereClause)
+          : db.select().from(books);
+        
+        const suggestions = await query.limit(10);
+          
+        console.log('Found suggestions:', suggestions.length);
+        
+        return suggestions.map((book) => ({
+          id: book.id,
+          title: book.title,
+          authors: book.authors ? JSON.parse(book.authors) : [],
+          description: book.description,
+          publishedDate: book.publishedDate,
+          thumbnail: book.thumbnail,
+          smallThumbnail: book.smallThumbnail,
+          medium: book.medium,
+          large: book.large,
+          extraLarge: book.extraLarge,
+          pageCount: book.pageCount,
+          categories: book.categories ? JSON.parse(book.categories) : [],
+          previewLink: book.previewLink,
+          infoLink: book.infoLink,
+        }));
+      } catch (error) {
+        console.error('Book suggestions error:', error);
+        return [];
+      }
+    }),
+
   addToList: protectedProcedure
     .input(
       z.object({
@@ -46,7 +112,7 @@ export const bookRouter = createTRPCRouter({
       
       try {
         // First, ensure the book exists in our database
-        const googleBook = await getBookById(bookId);
+        const googleBook = await BookCacheService.getBookByIdWithCache(bookId);
         if (!googleBook) {
           throw new Error('Book not found');
         }
@@ -171,7 +237,7 @@ export const bookRouter = createTRPCRouter({
               and(
                 eq(bookListItems.bookListId, parseInt(listId)),
                 gte(bookListItems.sortOrder, oldIndex + 1),
-                sql`sort_order <= ${newIndex}`
+                lte(bookListItems.sortOrder, newIndex)
               )
             );
         } else {
@@ -182,7 +248,7 @@ export const bookRouter = createTRPCRouter({
               and(
                 eq(bookListItems.bookListId, parseInt(listId)),
                 gte(bookListItems.sortOrder, newIndex),
-                sql`sort_order < ${oldIndex}`
+                lt(bookListItems.sortOrder, oldIndex)
               )
             );
         }
