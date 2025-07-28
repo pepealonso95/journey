@@ -7,13 +7,6 @@ import { Header } from '@/components/layout';
 import { Button } from '@/components/ui/button';
 import { LikeButton } from '@/components/ui/LikeButton';
 
-interface UserListPageProps {
-  params: {
-    handle: string;
-    slug: string;
-  };
-}
-
 // Utility function to clean HTML tags from descriptions
 function cleanDescription(description: string): string {
   return description
@@ -34,7 +27,11 @@ function getGoogleBooksLink(book: any): string {
   return `https://books.google.com/books?id=${book.id}`;
 }
 
-export default async function UserListPage({ params }: UserListPageProps) {
+export default async function UserListPage({
+  params,
+}: {
+  params: Promise<{ handle: string; slug: string }>;
+}) {
   const { handle: rawHandle, slug: rawSlug } = await params;
   const handle = decodeURIComponent(rawHandle);
   const slug = decodeURIComponent(rawSlug);
@@ -165,7 +162,17 @@ export default async function UserListPage({ params }: UserListPageProps) {
                       
                       {book.authors && (
                         <p className="text-lg text-gray-600 mb-4">
-                          {typeof book.authors === 'string' ? JSON.parse(book.authors).join(", ") : Array.isArray(book.authors) ? book.authors.join(", ") : ''}
+                          {(() => {
+                            try {
+                              if (typeof book.authors === 'string') {
+                                const parsed = JSON.parse(book.authors);
+                                return Array.isArray(parsed) ? parsed.join(", ") : '';
+                              }
+                              return '';
+                            } catch {
+                              return '';
+                            }
+                          })()}
                         </p>
                       )}
                       
@@ -248,7 +255,17 @@ export default async function UserListPage({ params }: UserListPageProps) {
                       
                       {book.authors && (
                         <p className="text-lg text-gray-600 mb-4">
-                          {typeof book.authors === 'string' ? JSON.parse(book.authors).join(", ") : Array.isArray(book.authors) ? book.authors.join(", ") : ''}
+                          {(() => {
+                            try {
+                              if (typeof book.authors === 'string') {
+                                const parsed = JSON.parse(book.authors);
+                                return Array.isArray(parsed) ? parsed.join(", ") : '';
+                              }
+                              return '';
+                            } catch {
+                              return '';
+                            }
+                          })()}
                         </p>
                       )}
                       
@@ -291,7 +308,7 @@ export default async function UserListPage({ params }: UserListPageProps) {
                         {book.large || book.medium || book.thumbnail ? (
                           <Image
                             src={book.large || book.medium || book.thumbnail || ''}
-                            alt={book.title}
+                            alt={book.title || 'Book cover'}
                             fill
                             className="object-cover rounded-lg shadow-lg group-hover:shadow-xl transition-shadow"
                             sizes="192px"
@@ -330,7 +347,17 @@ export default async function UserListPage({ params }: UserListPageProps) {
                     
                     {book.authors && (
                       <p className="text-lg text-gray-600 mb-4">
-                        {typeof book.authors === 'string' ? book.authors : Array.isArray(book.authors) ? book.authors.join(", ") : ''}
+                        {(() => {
+                          try {
+                            if (typeof book.authors === 'string') {
+                              const parsed = JSON.parse(book.authors);
+                              return Array.isArray(parsed) ? parsed.join(", ") : book.authors;
+                            }
+                            return '';
+                          } catch {
+                            return typeof book.authors === 'string' ? book.authors : '';
+                          }
+                        })()}
                       </p>
                     )}
                     
@@ -366,7 +393,7 @@ export default async function UserListPage({ params }: UserListPageProps) {
                     <LikeButton
                       bookListId={listData.id}
                       initialLikeCount={listData.likeCount || 0}
-                      size="default"
+                      size="md"
                       variant="default"
                     />
                     <div>
@@ -415,7 +442,11 @@ export default async function UserListPage({ params }: UserListPageProps) {
   }
 }
 
-export async function generateMetadata({ params }: UserListPageProps) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ handle: string; slug: string }>;
+}) {
   const { handle: rawHandle, slug: rawSlug } = await params;
   const handle = decodeURIComponent(rawHandle);
   const slug = decodeURIComponent(rawSlug);

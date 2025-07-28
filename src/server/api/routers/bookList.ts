@@ -23,10 +23,10 @@ export const bookListRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input }) => {
-      const { title, description, bookIds, books, slug: providedSlug } = input;
+      const { title, description, bookIds, books: inputBooks, slug: providedSlug } = input;
       
       // Handle both old and new input formats
-      const rawBookData = books || (bookIds ? bookIds.map(id => ({ id, customDescription: undefined })) : []);
+      const rawBookData = inputBooks || (bookIds ? bookIds.map(id => ({ id, customDescription: undefined })) : []);
       if (!rawBookData || rawBookData.length === 0) {
         throw new TRPCError({ code: 'BAD_REQUEST', message: 'No books provided' });
       }

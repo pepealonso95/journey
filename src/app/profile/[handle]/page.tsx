@@ -6,13 +6,11 @@ import { ProfileClient } from './ProfileClient';
 import { ProfileHeader } from './ProfileHeader';
 import { Header } from '@/components/layout';
 
-interface UserProfilePageProps {
-  params: {
-    handle: string;
-  };
-}
-
-export default async function UserProfilePage({ params }: UserProfilePageProps) {
+export default async function UserProfilePage({
+  params,
+}: {
+  params: Promise<{ handle: string }>;
+}) {
   const { handle: rawHandle } = await params;
   const handle = decodeURIComponent(rawHandle);
 
@@ -69,7 +67,9 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
 
         return {
           ...list,
-          books: listBooks.map(item => item.book).filter(Boolean),
+          books: listBooks
+            .map(item => item.book)
+            .filter((book): book is NonNullable<typeof book> => book !== null),
         };
       })
     );
@@ -101,7 +101,11 @@ export default async function UserProfilePage({ params }: UserProfilePageProps) 
   }
 }
 
-export async function generateMetadata({ params }: UserProfilePageProps) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ handle: string }>;
+}) {
   const { handle: rawHandle } = await params;
   const handle = decodeURIComponent(rawHandle);
   
