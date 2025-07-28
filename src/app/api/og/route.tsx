@@ -100,7 +100,7 @@ export async function GET(request: Request) {
         
         // First, let's see what slugs actually exist
         const allSlugs = await sql`SELECT slug FROM "journey_bookList" LIMIT 10`;
-        console.log('OG: Available slugs:', allSlugs.rows.map((r: any) => r.slug));
+        console.log('OG: Available slugs:', allSlugs.rows.map((r) => (r as { slug: string }).slug));
         
         // Get book list info (match the working tRPC query - no isPublic filter)
         const listResult = await sql`
@@ -116,7 +116,12 @@ export async function GET(request: Request) {
         }
         
         if (listResult.rows.length > 0) {
-          const list = listResult.rows[0] as any;
+          const list = listResult.rows[0] as {
+            id: number;
+            title: string;
+            isAnonymous: boolean;
+            expires_at: string | null;
+          };
           
           // Check if anonymous list has expired
           if (list.isAnonymous && list.expires_at && new Date(list.expires_at) < new Date()) {
@@ -131,7 +136,7 @@ export async function GET(request: Request) {
               ORDER BY "sortOrder"
             `;
             
-            finalBookIds = booksResult.rows.map((item: any) => item.bookId);
+            finalBookIds = booksResult.rows.map((item) => (item as { bookId: string }).bookId);
             finalTitle2 = sanitizeText(list.title) || 'Reading List';
             
             console.log('OG: Found book list with', finalBookIds.length, 'books');
@@ -175,7 +180,7 @@ export async function GET(request: Request) {
       
       console.log('OG: Database result:', books.length, 'books found');
       
-      validBooks = books.map((book: any) => ({
+      validBooks = books.map((book) => ({
         id: book.id,
         volumeInfo: {
           title: sanitizeText(book.title) || 'Unknown Title',
@@ -265,6 +270,7 @@ export async function GET(request: Request) {
               >
                 {/* Book Cover */}
                 {book?.volumeInfo.imageLinks?.thumbnail ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={book.volumeInfo.imageLinks.thumbnail}
                     alt={book.volumeInfo.title}

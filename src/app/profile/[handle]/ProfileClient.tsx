@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, ExternalLink, BookOpen, Calendar, ChevronDown, MoreVertical, Trash2 } from 'lucide-react';
+import { Heart, BookOpen, ChevronDown, MoreVertical, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -189,7 +189,7 @@ export function ProfileClient({ handle, lists, profileUserId }: ProfileClientPro
                 <div className="flex gap-1 flex-shrink-0">
                   {list.books && list.books.length > 0 ? (
                     <>
-                      {list.books.slice(0, 4).map((book, index) => (
+                      {list.books.slice(0, 4).map((book) => (
                         <div key={book.id} className="relative">
                           {book.large || book.medium || book.thumbnail ? (
                             <Image

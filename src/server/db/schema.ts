@@ -3,7 +3,6 @@ import {
   index,
   integer,
   pgTableCreator,
-  primaryKey,
   serial,
   text,
   timestamp,

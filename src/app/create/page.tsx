@@ -8,7 +8,7 @@ import { generateShareUrl, parseShareUrl, ANONYMOUS_LIST_SIZE, generateSessionSl
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { Search, Copy, ChevronLeft, Loader2, BookOpen, User } from "lucide-react";
+import { Search, Copy, Loader2, BookOpen, User } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Header } from "@/components/layout";
 import { BookList, SearchResults, BookComparison } from "@/components/book";

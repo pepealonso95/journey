@@ -194,7 +194,7 @@ export class BookCacheService {
                 accessCount: sql`COALESCE(${books.accessCount}, 0) + 1`,
               },
             });
-        } catch (insertError) {
+        } catch {
           // If the new columns don't exist yet, try without them
           await db
             .insert(books)

@@ -1,5 +1,4 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
 import { api } from '@/lib/api-server';
 import SharePageClient from '../SharePageClient';
 

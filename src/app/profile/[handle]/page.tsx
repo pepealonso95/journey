@@ -136,7 +136,7 @@ export async function generateMetadata({
         images: user[0].image ? [user[0].image] : [],
       },
     };
-  } catch (error) {
+  } catch {
     return {
       title: `@${handle} - Journey`,
       description: `User profile for @${handle}`,

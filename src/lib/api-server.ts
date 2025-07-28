@@ -1,12 +1,13 @@
 import { appRouter } from '@/server/api/root';
 import { createTRPCContext } from '@/lib/trpc';
+import { NextRequest } from 'next/server';
 
 /**
  * Create a server-side API caller
  */
 export async function createApiCaller() {
   const ctx = await createTRPCContext({ 
-    req: new Request('http://localhost') as any // Dummy request for server-side calls
+    req: new NextRequest('http://localhost') // Dummy request for server-side calls
   });
   return appRouter.createCaller(ctx);
 }

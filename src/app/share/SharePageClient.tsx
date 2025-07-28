@@ -9,7 +9,7 @@ import type { GoogleBook } from "@/lib/google-books";
 import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Copy, Loader2, BookOpen, ChevronRight, ExternalLink, User, Twitter } from "lucide-react";
+import { Copy, Loader2, BookOpen, ExternalLink, User, Twitter } from "lucide-react";
 import { Header } from "@/components/layout";
 import { api } from "@/lib/api";
 
@@ -365,7 +365,7 @@ function SharePageContent({ slug }: SharePageContentProps) {
                   {book.customDescription && (
                     <div className="mb-3 bg-blue-50 p-3 rounded">
                       <p className="text-sm font-medium text-blue-900 mb-1">Why this book?</p>
-                      <p className="text-sm text-blue-800 italic">"{book.customDescription}"</p>
+                      <p className="text-sm text-blue-800 italic">&ldquo;{book.customDescription}&rdquo;</p>
                     </div>
                   )}
                   
@@ -448,7 +448,7 @@ function SharePageContent({ slug }: SharePageContentProps) {
                   {book.customDescription && (
                     <div className="mb-3 bg-blue-50 p-2 rounded">
                       <p className="text-xs font-medium text-blue-900 mb-1">Why this book?</p>
-                      <p className="text-xs text-blue-800 italic">"{book.customDescription}"</p>
+                      <p className="text-xs text-blue-800 italic">&ldquo;{book.customDescription}&rdquo;</p>
                     </div>
                   )}
                   
@@ -530,7 +530,7 @@ function SharePageContent({ slug }: SharePageContentProps) {
                   {book.customDescription && (
                     <div className="mb-3 bg-blue-50 p-2 rounded">
                       <p className="text-xs font-medium text-blue-900 mb-1">Why this book?</p>
-                      <p className="text-xs text-blue-800 italic">"{book.customDescription}"</p>
+                      <p className="text-xs text-blue-800 italic">&ldquo;{book.customDescription}&rdquo;</p>
                     </div>
                   )}
                   

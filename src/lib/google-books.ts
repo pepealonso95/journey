@@ -130,9 +130,8 @@ export function transformToDbFormat(googleBook: GoogleBook) {
 
 // Legacy class wrapper for backward compatibility (can be removed after migration)
 export class GoogleBooksService {
-  constructor(_apiKey?: string) {
-    // apiKey parameter kept for backward compatibility but not used
-    // since helper functions use environment variables directly
+  constructor() {
+    // Legacy constructor for backward compatibility
   }
 
   async searchBooks(query: string, maxResults = 10): Promise<GoogleBook[]> {

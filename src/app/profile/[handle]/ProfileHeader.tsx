@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ExternalLink, BookOpen, Calendar, User } from 'lucide-react';
+import { ExternalLink, BookOpen, Calendar } from 'lucide-react';
 import { useSession } from 'next-auth/react';
 import { SignOutButton } from '@/components/AuthButtons';
 
@@ -14,7 +14,22 @@ interface UserProfile {
   twitterHandle: string | null;
   twitterProfileUrl: string | null;
   createdAt: Date;
-  lists: any[];
+  lists: Array<{
+    id: number;
+    title: string;
+    description: string | null;
+    slug: string;
+    likeCount: number;
+    createdAt: Date;
+    bookCount: number;
+    books: Array<{
+      id: string;
+      title: string | null;
+      thumbnail: string | null;
+      medium: string | null;
+      large: string | null;
+    }>;
+  }>;
 }
 
 interface ProfileHeaderProps {

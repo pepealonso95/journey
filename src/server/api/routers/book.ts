@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure, protectedProcedure } from '@/lib/trpc';
-import { getBookById, transformToDbFormat } from '@/lib/google-books';
+import { transformToDbFormat } from '@/lib/google-books';
 import { BookCacheService } from '@/lib/book-cache';
 import { db } from '@/server/db';
 import { books, bookListItems } from '@/server/db/schema';
@@ -107,7 +107,7 @@ export const bookRouter = createTRPCRouter({
         insertIndex: z.number().min(0).max(3), // 0-3 for 4 books
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { listId, bookId, insertIndex } = input;
       
       try {
@@ -150,7 +150,7 @@ export const bookRouter = createTRPCRouter({
         bookId: z.string(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { listId, bookId } = input;
       
       try {
@@ -203,7 +203,7 @@ export const bookRouter = createTRPCRouter({
         newIndex: z.number().min(0).max(3), // 0-3 for 4 books
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async ({ input }) => {
       const { listId, bookId, newIndex } = input;
       
       try {

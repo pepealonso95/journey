@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, ExternalLink, ArrowLeft, Calendar, User, Twitter, Copy, BookOpen, Loader2 } from 'lucide-react';
+import { ExternalLink, User, Twitter, BookOpen } from 'lucide-react';
 import { api } from '@/lib/api-server';
 import { Header } from '@/components/layout';
 import { Button } from '@/components/ui/button';
@@ -17,14 +17,14 @@ function cleanDescription(description: string): string {
 }
 
 // Utility function to get the best Google Books link for a book
-function getGoogleBooksLink(book: any): string {
+function getGoogleBooksLink(book: { infoLink?: string | null; previewLink?: string | null; id?: string }): string {
   if (book.infoLink) {
     return book.infoLink;
   }
   if (book.previewLink) {
     return book.previewLink;
   }
-  return `https://books.google.com/books?id=${book.id}`;
+  return book.id ? `https://books.google.com/books?id=${book.id}` : '#';
 }
 
 export default async function UserListPage({
@@ -180,7 +180,7 @@ export default async function UserListPage({
                       {book.customDescription && (
                         <div className="mb-3 bg-blue-50 p-3 rounded">
                           <p className="text-sm font-medium text-blue-900 mb-1">Why this book?</p>
-                          <p className="text-sm text-blue-800 italic">"{book.customDescription}"</p>
+                          <p className="text-sm text-blue-800 italic">&ldquo;{book.customDescription}&rdquo;</p>
                         </div>
                       )}
                       
@@ -273,7 +273,7 @@ export default async function UserListPage({
                       {book.customDescription && (
                         <div className="mb-3 bg-blue-50 p-3 rounded">
                           <p className="text-sm font-medium text-blue-900 mb-1">Why this book?</p>
-                          <p className="text-sm text-blue-800 italic">"{book.customDescription}"</p>
+                          <p className="text-sm text-blue-800 italic">&ldquo;{book.customDescription}&rdquo;</p>
                         </div>
                       )}
                       
@@ -365,7 +365,7 @@ export default async function UserListPage({
                     {book.customDescription && (
                       <div className="mb-3 bg-blue-50 p-3 rounded mx-auto max-w-sm">
                         <p className="text-sm font-medium text-blue-900 mb-1">Why this book?</p>
-                        <p className="text-sm text-blue-800 italic">"{book.customDescription}"</p>
+                        <p className="text-sm text-blue-800 italic">&ldquo;{book.customDescription}&rdquo;</p>
                       </div>
                     )}
                     
@@ -479,7 +479,7 @@ export async function generateMetadata({
         images: listData.books[0]?.thumbnail ? [listData.books[0].thumbnail] : [],
       },
     };
-  } catch (error) {
+  } catch {
     return {
       title: `List by @${handle} - Journey`,
       description: `A book list by @${handle}`,

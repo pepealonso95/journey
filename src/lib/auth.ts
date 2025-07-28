@@ -24,7 +24,10 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user, account, profile }) {
       // If signing in with Twitter, extract the username (handle)
       if (account?.provider === 'twitter' && profile) {
-        const twitterProfile = profile as any;
+        const twitterProfile = profile as { 
+          data?: { username?: string }; 
+          username?: string; 
+        };
         const twitterHandle = twitterProfile.data?.username || twitterProfile.username;
         const twitterProfileUrl = `https://twitter.com/${twitterHandle}`;
         

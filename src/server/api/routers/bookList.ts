@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure, protectedProcedure } from '@/lib/trpc';
 import { db } from '@/server/db';
-import { bookLists, bookListItems, books, users, bookListLikes } from '@/server/db/schema';
+import { bookLists, bookListItems, books, users } from '@/server/db/schema';
 import { eq, and, desc, sql, gte } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
 import { BookCacheService } from '@/lib/book-cache';
@@ -253,7 +253,7 @@ export const bookListRouter = createTRPCRouter({
         description: z.string().optional(),
       })
     )
-    .mutation(async ({ ctx, input }) => {
+    .mutation(async () => {
       // TODO: Implement database update
       return { success: true };
     }),
