@@ -6,14 +6,12 @@ import { bookLists, bookListItems, books, users } from '@/server/db/schema';
 import { eq, desc, sql, and, gte } from 'drizzle-orm';
 import { LikeButton } from '@/components/ui/LikeButton';
 
-interface PopularPageProps {
-  searchParams: {
-    timeframe?: 'week' | 'month' | 'all';
-  };
-}
-
-export default async function PopularPage({ searchParams }: PopularPageProps) {
-  const timeframe = searchParams.timeframe || 'week';
+export default async function PopularPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ timeframe?: 'week' | 'month' | 'all' }>;
+}) {
+  const { timeframe = 'week' } = await searchParams;
   
   // Build date filter
   let dateFilter = sql`true`;
