@@ -7,7 +7,7 @@ import { Twitter } from 'lucide-react';
 export function SignInButton() {
   return (
     <Button 
-      onClick={() => signIn('twitter')} 
+      onClick={() => signIn('twitter', { callbackUrl: '/' })} 
       variant="ghost"
       size="sm"
       className="text-gray-600 hover:text-gray-900"
