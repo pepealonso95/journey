@@ -8,7 +8,10 @@ import superjson from 'superjson';
 import { api } from '@/lib/api';
 
 function getBaseUrl() {
+  // Only run on server-side (during SSR)
   if (typeof window !== 'undefined') return '';
+  
+  // Server-side environment detection
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
   return `http://localhost:${process.env.PORT ?? 3000}`;
 }
