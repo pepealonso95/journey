@@ -45,14 +45,20 @@ function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   try {
     const parsed = new URL(url);
-    // Only allow HTTPS URLs from trusted domains  
-    return parsed.protocol === 'https:' && 
+    // Allow both HTTP and HTTPS URLs from trusted Google domains
+    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') && 
            (parsed.hostname.includes('googleusercontent.com') || 
             parsed.hostname.includes('googleapis.com') ||
             parsed.hostname.includes('books.google.com'));
   } catch {
     return false;
   }
+}
+
+function normalizeImageUrl(url: string | null | undefined): string | undefined {
+  if (!url || !isValidImageUrl(url)) return undefined;
+  // Convert HTTP to HTTPS for security and compatibility
+  return url.replace(/^http:\/\//, 'https://');
 }
 
 function isValidSlug(slug: string | null): boolean {
@@ -196,7 +202,6 @@ export async function GET(request: Request) {
       console.log('OG: Database result:', books.length, 'books found');
       
       validBooks = books.map((book) => {
-        console.log('OG: Processing book:', book.id, 'thumbnail:', book.thumbnail, 'medium:', book.medium, 'large:', book.large);
         return {
         id: book.id,
         volumeInfo: {
@@ -205,11 +210,11 @@ export async function GET(request: Request) {
           description: book.description || undefined,
           publishedDate: book.publishedDate || undefined,
           imageLinks: {
-            thumbnail: isValidImageUrl(book.thumbnail) ? book.thumbnail : undefined,
-            smallThumbnail: isValidImageUrl(book.smallThumbnail) ? book.smallThumbnail : undefined,
-            medium: isValidImageUrl(book.medium) ? book.medium : undefined,
-            large: isValidImageUrl(book.large) ? book.large : undefined,
-            extraLarge: isValidImageUrl(book.extraLarge) ? book.extraLarge : undefined,
+            thumbnail: normalizeImageUrl(book.thumbnail),
+            smallThumbnail: normalizeImageUrl(book.smallThumbnail),
+            medium: normalizeImageUrl(book.medium),
+            large: normalizeImageUrl(book.large),
+            extraLarge: normalizeImageUrl(book.extraLarge),
           },
           industryIdentifiers: [
             ...(book.isbn10 ? [{ type: 'ISBN_10' as const, identifier: book.isbn10 }] : []),
