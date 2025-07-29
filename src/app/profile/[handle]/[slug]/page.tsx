@@ -461,6 +461,15 @@ export async function generateMetadata({
     const description = listData.description || 
       `A book list by @${handle}${bookTitles ? ` featuring ${bookTitles}` : ''}`;
     
+    // Build OG image URL with profile-specific parameters
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://www.readjourney.link';
+    const ogImageUrl = new URL('/api/og', baseUrl);
+    ogImageUrl.searchParams.set('slug', slug);
+    ogImageUrl.searchParams.set('handle', handle);
+    // Fallback to books and title if needed
+    ogImageUrl.searchParams.set('books', listData.books.map(book => book.id).join(','));
+    ogImageUrl.searchParams.set('title', listData.title);
+
     return {
       title: `${listData.title} by @${handle} - Journey`,
       description,
@@ -468,15 +477,35 @@ export async function generateMetadata({
         title: `${listData.title} by @${handle}`,
         description,
         type: 'article',
-        url: `/profile/${handle}/${slug}`,
-        images: listData.books[0]?.thumbnail ? [listData.books[0].thumbnail] : [],
+        url: `${baseUrl}/profile/${handle}/${slug}`,
+        siteName: 'Journey',
+        images: [{
+          url: ogImageUrl.toString(),
+          width: 1200,
+          height: 630,
+          alt: `${listData.title} by @${handle} - A curated reading list on Journey`,
+        }],
       },
       twitter: {
         card: 'summary_large_image',
         title: `${listData.title} by @${handle}`,
         description,
+        images: [ogImageUrl.toString()],
         creator: `@${handle}`,
-        images: listData.books[0]?.thumbnail ? [listData.books[0].thumbnail] : [],
+        site: '@pepealonsog',
+      },
+      // Additional meta tags for broader compatibility
+      other: {
+        // LinkedIn specific
+        'linkedin:owner': 'Journey',
+        // WhatsApp/Telegram compatibility
+        'article:author': `@${handle}`,
+        'article:section': 'Books',
+        // General social media
+        'image': ogImageUrl.toString(),
+        'image:width': '1200',
+        'image:height': '630',
+        'image:alt': `${listData.title} by @${handle} - A curated reading list on Journey`,
       },
     };
   } catch {

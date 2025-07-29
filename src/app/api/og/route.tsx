@@ -70,15 +70,17 @@ export async function GET(request: Request) {
     
     const { searchParams } = url;
     const rawSlug = searchParams.get('slug');
+    const rawHandle = searchParams.get('handle');
     const rawBookIds = searchParams.get('books')?.split(',') || [];
     const rawTitle = searchParams.get('title') || 'Reading List';
 
     // Validate and sanitize inputs
     const slug = rawSlug && isValidSlug(rawSlug) ? rawSlug : null;
+    const handle = rawHandle && /^[a-zA-Z0-9_]{1,15}$/.test(rawHandle) ? rawHandle : null;
     const bookIds = rawBookIds.filter(id => /^[a-zA-Z0-9_-]{1,50}$/.test(id)).slice(0, 4); // Limit to 4 books
     const finalTitle = sanitizeText(rawTitle) || 'Reading List';
 
-    console.log('OG: Parameters - slug:', slug, 'bookIds:', bookIds, 'title:', finalTitle);
+    console.log('OG: Parameters - slug:', slug, 'handle:', handle, 'bookIds:', bookIds, 'title:', finalTitle);
 
     // Test basic database connectivity first
     try {
@@ -102,13 +104,26 @@ export async function GET(request: Request) {
         const allSlugs = await sql`SELECT slug FROM "journey_bookList" LIMIT 10`;
         console.log('OG: Available slugs:', allSlugs.rows.map((r) => (r as { slug: string }).slug));
         
-        // Get book list info (match the working tRPC query - no isPublic filter)
-        const listResult = await sql`
-          SELECT id, title, "isAnonymous", expires_at
-          FROM "journey_bookList"
-          WHERE slug = ${slug}
-          LIMIT 1
-        `;
+        // Get book list info - handle both regular and profile-based queries
+        let listResult;
+        if (handle) {
+          // Profile-based query: join with users table to match by handle and slug
+          listResult = await sql`
+            SELECT bl.id, bl.title, bl."isAnonymous", bl.expires_at
+            FROM "journey_bookList" bl
+            JOIN "journey_user" u ON bl."userId" = u.id
+            WHERE u."twitterHandle" = ${handle} AND bl.slug = ${slug}
+            LIMIT 1
+          `;
+        } else {
+          // Regular share query: match by slug only
+          listResult = await sql`
+            SELECT id, title, "isAnonymous", expires_at
+            FROM "journey_bookList"
+            WHERE slug = ${slug}
+            LIMIT 1
+          `;
+        }
         
         console.log('OG: List query result:', listResult.rows.length, 'rows');
         if (listResult.rows.length > 0) {
@@ -180,7 +195,9 @@ export async function GET(request: Request) {
       
       console.log('OG: Database result:', books.length, 'books found');
       
-      validBooks = books.map((book) => ({
+      validBooks = books.map((book) => {
+        console.log('OG: Processing book:', book.id, 'thumbnail:', book.thumbnail, 'medium:', book.medium, 'large:', book.large);
+        return {
         id: book.id,
         volumeInfo: {
           title: sanitizeText(book.title) || 'Unknown Title',
@@ -205,7 +222,8 @@ export async function GET(request: Request) {
           infoLink: book.infoLink || undefined,
           canonicalVolumeLink: book.canonicalVolumeLink || undefined,
         },
-      }));
+        };
+      });
       
       console.log('OG: Transformed books:', validBooks.length);
       
@@ -269,21 +287,28 @@ export async function GET(request: Request) {
                 }}
               >
                 {/* Book Cover */}
-                {book?.volumeInfo.imageLinks?.thumbnail ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={book.volumeInfo.imageLinks.thumbnail}
-                    alt={book.volumeInfo.title}
-                    style={{
-                      width: '180px',
-                      height: '270px',
-                      objectFit: 'cover',
-                      borderRadius: '12px',
-                      boxShadow: '0 8px 16px -4px rgba(0, 0, 0, 0.2)',
-                      marginBottom: '16px',
-                    }}
-                  />
-                ) : (
+                {(() => {
+                  // Try multiple image sizes in order of preference
+                  const imageUrl = book?.volumeInfo.imageLinks?.large ||
+                                   book?.volumeInfo.imageLinks?.medium ||
+                                   book?.volumeInfo.imageLinks?.thumbnail ||
+                                   book?.volumeInfo.imageLinks?.smallThumbnail;
+                  
+                  return imageUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={imageUrl}
+                      alt={book.volumeInfo.title}
+                      style={{
+                        width: '180px',
+                        height: '270px',
+                        objectFit: 'cover',
+                        borderRadius: '12px',
+                        boxShadow: '0 8px 16px -4px rgba(0, 0, 0, 0.2)',
+                        marginBottom: '16px',
+                      }}
+                    />
+                  ) : (
                   <div
                     style={{
                       width: '180px',
@@ -301,7 +326,8 @@ export async function GET(request: Request) {
                       No Cover
                     </span>
                   </div>
-                )}
+                  );
+                })()}
 
                 {/* Reading Order */}
                 <div
