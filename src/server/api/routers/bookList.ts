@@ -56,9 +56,11 @@ export const bookListRouter = createTRPCRouter({
           .toLowerCase()
           .replace(/[^a-z0-9\s-]/g, '')
           .replace(/\s+/g, '-')
-          .substring(0, 50);
+          .substring(0, 30); // Reduced from 50 to 30
         
-        slug = `${baseSlug}-${createId().toLowerCase()}`;
+        // Use shorter ID - take only first 8 characters
+        const shortId = createId().toLowerCase().substring(0, 8);
+        slug = `${baseSlug}-${shortId}`;
       }
       
       // Set expiration for 90 days from now
@@ -147,17 +149,21 @@ export const bookListRouter = createTRPCRouter({
         throw new TRPCError({ code: 'UNAUTHORIZED' });
       }
 
-      const slug = input.title
+      const baseSlug = input.title
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
-        .substring(0, 100);
+        .substring(0, 30); // Reduced from 100 to 30
+
+      // Use shorter ID for uniqueness
+      const shortId = createId().toLowerCase().substring(0, 8);
+      const slug = `${baseSlug}-${shortId}`;
 
       const [newList] = await db.insert(bookLists).values({
         title: input.title,
         description: input.description,
         userId: ctx.session.user.id,
-        slug: `${slug}-${Date.now()}`, // Add timestamp to ensure uniqueness
+        slug,
       }).returning();
 
       return newList;
@@ -364,9 +370,11 @@ export const bookListRouter = createTRPCRouter({
         .toLowerCase()
         .replace(/[^a-z0-9\s-]/g, '')
         .replace(/\s+/g, '-')
-        .substring(0, 50);
+        .substring(0, 30); // Reduced from 50 to 30
       
-      const slug = `${baseSlug}-${createId().toLowerCase()}`;
+      // Use shorter ID - take only first 8 characters
+      const shortId = createId().toLowerCase().substring(0, 8);
+      const slug = `${baseSlug}-${shortId}`;
 
       try {
         // Fetch and cache the books first

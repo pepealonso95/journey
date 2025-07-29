@@ -106,17 +106,23 @@ export function transformToDbFormat(googleBook: GoogleBook) {
     (id) => id.type === 'ISBN_13'
   )?.identifier;
 
+  // Helper function to convert HTTP Google Books URLs to HTTPS
+  const normalizeGoogleBooksUrl = (url: string | undefined): string | undefined => {
+    if (!url) return undefined;
+    return url.replace(/^http:\/\/books\.google\.com/, 'https://books.google.com');
+  };
+
   return {
     id,
     title: volumeInfo.title,
     authors: JSON.stringify(volumeInfo.authors || []),
     description: volumeInfo.description,
     publishedDate: volumeInfo.publishedDate,
-    thumbnail: imageLinks.thumbnail,
-    smallThumbnail: imageLinks.smallThumbnail,
-    medium: imageLinks.medium,
-    large: imageLinks.large,
-    extraLarge: imageLinks.extraLarge,
+    thumbnail: normalizeGoogleBooksUrl(imageLinks.thumbnail),
+    smallThumbnail: normalizeGoogleBooksUrl(imageLinks.smallThumbnail),
+    medium: normalizeGoogleBooksUrl(imageLinks.medium),
+    large: normalizeGoogleBooksUrl(imageLinks.large),
+    extraLarge: normalizeGoogleBooksUrl(imageLinks.extraLarge),
     isbn10,
     isbn13,
     pageCount: volumeInfo.pageCount,

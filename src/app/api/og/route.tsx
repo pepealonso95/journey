@@ -45,7 +45,7 @@ function isValidImageUrl(url: string | null | undefined): boolean {
   if (!url) return false;
   try {
     const parsed = new URL(url);
-    // Only allow HTTPS URLs from trusted domains
+    // Only allow HTTPS URLs from trusted domains  
     return parsed.protocol === 'https:' && 
            (parsed.hostname.includes('googleusercontent.com') || 
             parsed.hostname.includes('googleapis.com') ||
