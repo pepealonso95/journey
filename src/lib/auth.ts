@@ -17,7 +17,6 @@ export const authOptions: NextAuthOptions = {
     TwitterProvider({
       clientId: process.env.TWITTER_CLIENT_ID!,
       clientSecret: process.env.TWITTER_CLIENT_SECRET!,
-      version: '2.0',
     }),
   ],
   secret: process.env.NEXTAUTH_SECRET,
@@ -26,11 +25,12 @@ export const authOptions: NextAuthOptions = {
       try {
         // If signing in with Twitter, extract the username (handle)
         if (account?.provider === 'twitter' && profile) {
+          // OAuth 1.0a uses screen_name
           const twitterProfile = profile as { 
-            data?: { username?: string }; 
-            username?: string; 
+            screen_name?: string;
+            username?: string;
           };
-          const twitterHandle = twitterProfile.data?.username || twitterProfile.username;
+          const twitterHandle = twitterProfile.screen_name || twitterProfile.username;
           
           if (twitterHandle) {
             const twitterProfileUrl = `https://twitter.com/${twitterHandle}`;
