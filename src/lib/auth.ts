@@ -20,34 +20,55 @@ export const authOptions: NextAuthOptions = {
       version: '2.0',
     }),
   ],
+  secret: process.env.NEXTAUTH_SECRET,
+  cookies: {
+    sessionToken: {
+      name: `next-auth.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+  },
   callbacks: {
     async signIn({ user, account, profile }) {
-      // If signing in with Twitter, extract the username (handle)
-      if (account?.provider === 'twitter' && profile) {
-        const twitterProfile = profile as { 
-          data?: { username?: string }; 
-          username?: string; 
-        };
-        const twitterHandle = twitterProfile.data?.username || twitterProfile.username;
-        const twitterProfileUrl = `https://twitter.com/${twitterHandle}`;
-        
-        // Update user with Twitter data
-        if (twitterHandle && user.id) {
-          try {
-            await db.update(users)
-              .set({
-                twitterHandle,
-                twitterProfileUrl,
-                username: twitterHandle, // Also set username field for compatibility
-              })
-              .where(eq(users.id, user.id));
-          } catch (error) {
-            console.error('Failed to update user Twitter data:', error);
-            // Don't block sign in if this fails
+      try {
+        // If signing in with Twitter, extract the username (handle)
+        if (account?.provider === 'twitter' && profile) {
+          const twitterProfile = profile as { 
+            data?: { username?: string }; 
+            username?: string; 
+          };
+          const twitterHandle = twitterProfile.data?.username || twitterProfile.username;
+          
+          if (twitterHandle) {
+            const twitterProfileUrl = `https://twitter.com/${twitterHandle}`;
+            
+            // Update user with Twitter data
+            if (user.id) {
+              try {
+                await db.update(users)
+                  .set({
+                    twitterHandle,
+                    twitterProfileUrl,
+                    username: twitterHandle, // Also set username field for compatibility
+                  })
+                  .where(eq(users.id, user.id));
+              } catch (error) {
+                console.error('Failed to update user Twitter data:', error);
+                // Don't block sign in if this fails
+              }
+            }
           }
-        }
       }
       return true;
+      } catch (error) {
+        console.error('SignIn callback error:', error);
+        // Still allow sign in even if our custom logic fails
+        return true;
+      }
     },
     session: ({ session, user }) => ({
       ...session,
