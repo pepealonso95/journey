@@ -17,7 +17,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: '20'
         
     - name: Enable Corepack
       run: corepack enable
@@ -46,6 +46,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Enable Corepack
+      run: corepack enable
       
     - name: Install Vercel CLI
       run: npm install --global vercel@latest
@@ -88,6 +96,14 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Enable Corepack
+      run: corepack enable
       
     - name: Install Vercel CLI
       run: npm install --global vercel@latest
