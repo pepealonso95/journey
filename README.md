@@ -4,13 +4,9 @@
 
 Journey is a modern web application that allows users to create, curate, and share beautiful reading lists of exactly 4 books on any topic. Whether you're building a machine learning curriculum or sharing must-reads before an MBA, Journey makes it easy to create focused, ordered book recommendations.
 
-## 🤖 Development Notes
+## 👨‍💻 Author
 
-This project was built over a weekend using Claude Code, mostly as an experiment to see what could be accomplished quickly with AI assistance. Started Friday evening with just the idea of making book sharing easier, and by Sunday had a working platform with user auth, social features, and all the polish.
-
-It's been a good test case for rapid prototyping - the kind of project that might normally take weeks ended up being a weekend hack. Everything from database design to the drag-and-drop interface to OpenGraph image generation was built through conversation rather than traditional coding.
-
-*Created by [@pepealonsog](https://twitter.com/pepealonsog)*
+Vibe-coded by [@pepealonsog](https://twitter.com/pepealonsog) over a weekend experimenting with claude code.
 
 ## 🎯 Purpose
 
@@ -23,7 +19,7 @@ Journey addresses the common problem of book recommendation overload. Instead of
 - **Custom Descriptions**: Add personal context explaining why each book matters in your sequence
 - **Anonymous Sharing**: Share lists instantly via URL without requiring authentication
 - **Gamified Ordering**: Intuitive "which should be read first?" comparison interface
-- **Drag & Drop**: Reorder books with smooth drag-and-drop interactions
+- **Read First Ordering**: Reorder books by simply answering which would you read first
 - **Google Books Integration**: Search and select from millions of books with rich metadata
 
 ### 👤 User Profiles & Authentication
@@ -34,8 +30,7 @@ Journey addresses the common problem of book recommendation overload. Instead of
 - **Profile Sharing**: Custom OpenGraph previews for profile-based lists
 
 ### 🌐 Social Features & Discovery
-- **Beautiful Previews**: Rich social media previews with book covers for Twitter, LinkedIn, WhatsApp
-- **Like System**: Show appreciation for great book recommendations
+- **Beautiful Previews**: Rich social media previews with list of book covers for Twitter, LinkedIn, WhatsApp
 - **Popular Lists**: Discover trending lists from the community organized by timeframe
 - **Social Discovery**: Find your next great read from curated community recommendations
 
@@ -102,9 +97,9 @@ src/
 
 ### Core Concepts
 
-- **Dual Mode Architecture**: Works both with and without authentication
-  - Anonymous lists: Encoded in URL parameters, stored in database with expiration
-  - Profile lists: Persistent storage with user association
+- **Ease of use**: Works both with and without authentication
+  - **Anonymous lists**: Encoded in URL parameters, stored in database with expiration
+  - **Profile lists**: Persistent storage with user association
 - **Comparison-based Ordering**: Tournament-style comparisons to determine optimal reading sequence
 - **Edge-First**: Optimized for Vercel Edge Runtime with intelligent caching
 - **Type-Safe**: End-to-end TypeScript with tRPC for API calls
@@ -174,9 +169,6 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 - **Social Integration**: Perfect previews for Twitter, LinkedIn, WhatsApp, and more
 - **Profile Pages**: Your personal reading hub at `/profile/{handle}`
 
-## 👨‍💻 Author
-
-Built by [@pepealonsog](https://twitter.com/pepealonsog) over a weekend as an experiment in AI-assisted development.
 
 ## 🤝 Contributing
 
